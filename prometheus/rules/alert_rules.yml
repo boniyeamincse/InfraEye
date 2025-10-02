@@ -113,3 +113,40 @@ groups:
         annotations:
           summary: "Alertmanager is down"
           description: "Alertmanager has been down for more than 1 minute."
+
+      # Security Exporter Alerts
+      - alert: SecurityExporterDown
+        expr: up{job="security"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Security Exporter is down"
+          description: "Security Exporter has been down for more than 1 minute."
+
+      - alert: UnauthorizedPortChange
+        expr: infraeye_security_ports_added > 0 or infraeye_security_ports_removed > 0
+        for: 0s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Port changes detected"
+          description: "Port changes detected: {{ $value }} ports added/removed"
+
+      - alert: HighFailedLoginAttempts
+        expr: increase(infraeye_security_failed_logins[5m]) > 5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of failed login attempts"
+          description: "More than 5 failed login attempts in the last 5 minutes"
+
+      - alert: UnusualNetworkConnections
+        expr: infraeye_security_network_connections > 100
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: "High number of network connections"
+          description: "More than 100 established network connections detected"

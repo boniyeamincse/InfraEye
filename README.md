@@ -82,12 +82,13 @@ InfraEye is a comprehensive monitoring and observability stack designed for deep
 - **Postgres Exporter**: Monitors PostgreSQL database performance and health.
 - **Blackbox Exporter**: Probes endpoints over HTTP, HTTPS, DNS, TCP, ICMP, and more.
 - **Windows Exporter**: Collects Windows system metrics and WMI data.
+- **Security Exporter**: Monitors network security metrics including open ports, failed login attempts, and network connections (lightweight IDS functionality).
 
 ## Prerequisites
 
 - Docker and Docker Compose installed on your system
 - At least 4GB of available RAM (recommended)
-- Ports 3000 (Grafana), 9090 (Prometheus), 9093 (Alertmanager), 9100 (Node Exporter), 9187 (Postgres Exporter), and 9115 (Blackbox Exporter) available
+- Ports 3000 (Grafana), 9090 (Prometheus), 9093 (Alertmanager), 9100 (Node Exporter), 9187 (Postgres Exporter), 9115 (Blackbox Exporter), and 8001 (Security Exporter) available
 
 ## Quick Start
 
@@ -167,6 +168,7 @@ Pre-configured alerting rules are available in `prometheus/rules/alert_rules.yml
 - Service availability checks
 - Database monitoring
 - Blackbox probe monitoring
+- Security monitoring (unauthorized port changes, failed login attempts, unusual network traffic)
 
 ### Security Features
 
