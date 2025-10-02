@@ -1,9 +1,13 @@
 global:
-  scrape_interval: 15s
-  evaluation_interval: 15s
+   scrape_interval: 15s
+   evaluation_interval: 15s
 
 rule_files:
-  - "rules/alert_rules.yml"
+   - "rules/alert_rules.yml"
+
+# Remote write to VictoriaMetrics for long-term storage
+remote_write:
+   - url: "http://victoriametrics:8428/api/v1/write"
 
 scrape_configs:
   - job_name: 'prometheus'

@@ -1,0 +1,192 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "InfraEye Trend Analysis & Forecasting",
+    "tags": ["infraeye", "trends", "forecasting", "anomalies"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "CPU Usage Trend (30 Days)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "100 - (avg by(instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+            "legendFormat": "{{instance}} CPU Usage %",
+            "refId": "A"
+          },
+          {
+            "expr": "predict_linear(avg by(instance) (100 - (avg by(instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100))[7d:1d], 86400)",
+            "legendFormat": "{{instance}} CPU Forecast (24h)",
+            "refId": "B"
+          }
+        ],
+        "yAxes": [
+          {
+            "unit": "percent",
+            "min": 0,
+            "max": 100
+          },
+          {
+            "unit": "short"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Memory Usage Trend (30 Days)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "(1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100",
+            "legendFormat": "{{instance}} Memory Usage %",
+            "refId": "A"
+          },
+          {
+            "expr": "predict_linear((1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100[7d:1d], 86400)",
+            "legendFormat": "{{instance}} Memory Forecast (24h)",
+            "refId": "B"
+          }
+        ],
+        "yAxes": [
+          {
+            "unit": "percent",
+            "min": 0,
+            "max": 100
+          },
+          {
+            "unit": "short"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Disk Usage Growth Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(node_filesystem_used_bytes[1h]) / 1024 / 1024 / 1024",
+            "legendFormat": "{{instance}} {{mountpoint}} GB/hour growth",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "unit": "GBs",
+            "min": 0
+          },
+          {
+            "unit": "short"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Network Traffic Trend",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(node_network_receive_bytes_total[5m]) / 1024 / 1024",
+            "legendFormat": "{{instance}} {{device}} RX MB/s",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(node_network_transmit_bytes_total[5m]) / 1024 / 1024",
+            "legendFormat": "{{instance}} {{device}} TX MB/s",
+            "refId": "B"
+          }
+        ],
+        "yAxes": [
+          {
+            "unit": "MBs",
+            "min": 0
+          },
+          {
+            "unit": "short"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Security Events Trend",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "increase(infraeye_security_failed_logins[1h])",
+            "legendFormat": "Failed Logins per Hour",
+            "refId": "A"
+          },
+          {
+            "expr": "infraeye_security_network_connections",
+            "legendFormat": "Network Connections",
+            "refId": "B"
+          },
+          {
+            "expr": "infraeye_security_ports_added",
+            "legendFormat": "Ports Added",
+            "refId": "C"
+          }
+        ],
+        "yAxes": [
+          {
+            "unit": "short",
+            "min": 0
+          },
+          {
+            "unit": "short"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Service Uptime Trend (30 Days)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "avg_over_time(up[30d]) * 100",
+            "legendFormat": "{{job}} Uptime %",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 95
+                },
+                {
+                  "color": "green",
+                  "value": 99
+                }
+              ]
+            },
+            "unit": "percent"
+          }
+        }
+      }
+    ],
+    "time": {
+      "from": "now-30d",
+      "to": "now"
+    },
+    "timepicker": {},
+    "templating": {
+      "list": []
+    },
+    "annotations": {
+      "list": []
+    },
+    "refresh": "5m",
+    "schemaVersion": 27,
+    "version": 0,
+    "links": []
+  }
+}

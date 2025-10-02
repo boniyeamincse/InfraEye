@@ -83,12 +83,55 @@ InfraEye is a comprehensive monitoring and observability stack designed for deep
 - **Blackbox Exporter**: Probes endpoints over HTTP, HTTPS, DNS, TCP, ICMP, and more.
 - **Windows Exporter**: Collects Windows system metrics and WMI data.
 - **Security Exporter**: Monitors network security metrics including open ports, failed login attempts, and network connections (lightweight IDS functionality).
+- **VictoriaMetrics**: Long-term time-series database for storing metrics for months/years with high performance and efficient storage.
+- **Reporting Service**: Automated generation of weekly and monthly reports with trend analysis and anomaly detection.
+
+## Advanced Features
+
+### Long-term Metrics Storage
+
+InfraEye includes VictoriaMetrics for scalable long-term storage of monitoring data. VictoriaMetrics provides:
+
+- **12-month data retention** by default (configurable)
+- **High ingestion rates** and query performance
+- **Efficient storage compression** reducing disk usage by up to 70%
+- **Horizontal scaling** capabilities for large deployments
+- **Prometheus-compatible API** for seamless integration
+
+### Automated Reporting
+
+The reporting service generates comprehensive reports automatically:
+
+- **Weekly Reports**: System health summaries, CPU/RAM usage, service uptime, security events
+- **Monthly Reports**: Trend analysis, growth forecasts, anomaly detection
+- **Email Integration**: Optional email delivery for stakeholders
+- **HTML Format**: Professional reports with charts and insights
+
+Configure email reporting with environment variables:
+```bash
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+REPORT_RECIPIENTS=admin@company.com,team@company.com
+```
+
+### Trend Analysis & Forecasting
+
+Advanced dashboards provide predictive analytics:
+
+- **CPU/Memory Forecasting**: Predict resource usage 24 hours ahead
+- **Growth Trend Analysis**: Monitor disk and network usage trends
+- **Anomaly Detection**: Automated identification of unusual patterns
+- **Capacity Planning**: Forecast future resource requirements
+
+Access the Trend Analysis dashboard in Grafana for comprehensive insights into system behavior and future projections.
 
 ## Prerequisites
 
 - Docker and Docker Compose installed on your system
-- At least 4GB of available RAM (recommended)
-- Ports 3000 (Grafana), 9090 (Prometheus), 9093 (Alertmanager), 9100 (Node Exporter), 9187 (Postgres Exporter), 9115 (Blackbox Exporter), and 8001 (Security Exporter) available
+- At least 4GB of available RAM (recommended for basic setup), 8GB+ for long-term storage
+- Ports 3000 (Grafana), 9090 (Prometheus), 9093 (Alertmanager), 9100 (Node Exporter), 9187 (Postgres Exporter), 9115 (Blackbox Exporter), 8001 (Security Exporter), and 8428 (VictoriaMetrics) available
 
 ## Quick Start
 

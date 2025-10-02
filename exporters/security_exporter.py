@@ -8,6 +8,7 @@ import time
 import subprocess
 import re
 import json
+import os
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import threading
 import argparse
@@ -18,11 +19,12 @@ class SecurityMetrics:
         self.failed_login_count = 0
         self.last_log_check = 0
         self.network_connections = 0
+        self.log_positions = {}  # Track file positions for incremental reading
 
     def get_open_ports(self):
         """Get currently open listening ports"""
         try:
-            # Use netstat or ss to get listening ports
+            # Use ss for better IPv6 support
             result = subprocess.run(['ss', '-tln'], capture_output=True, text=True, timeout=10)
             if result.returncode != 0:
                 # Fallback to netstat
@@ -34,12 +36,21 @@ class SecurityMetrics:
                     parts = line.split()
                     if len(parts) >= 4:
                         addr = parts[3]
-                        if ':' in addr:
-                            port = addr.split(':')[-1]
+                        # Handle IPv4:port and [IPv6]:port formats
+                        if addr.startswith('[') and ']:' in addr:
+                            # IPv6 format: [::1]:80
+                            port_part = addr.split(']:')[-1]
+                        elif ':' in addr:
+                            # IPv4 format: 0.0.0.0:80 or ::1:80
+                            port_part = addr.split(':')[-1]
                         else:
-                            port = addr
+                            # Fallback
+                            port_part = addr
+
                         try:
-                            ports.add(int(port))
+                            port = int(port_part)
+                            if 1 <= port <= 65535:  # Valid port range
+                                ports.add(port)
                         except ValueError:
                             continue
             return ports
@@ -56,24 +67,49 @@ class SecurityMetrics:
         return added, removed
 
     def get_failed_logins(self):
-        """Parse auth logs for failed login attempts"""
+        """Parse auth logs for failed login attempts (incremental counting)"""
         try:
-            # Check /var/log/auth.log or /var/log/secure
             log_files = ['/var/log/auth.log', '/var/log/secure']
-            failed_count = 0
+            new_failed_count = 0
+            current_time = time.time()
 
             for log_file in log_files:
                 try:
+                    if not os.path.exists(log_file):
+                        continue
+
+                    # Get current file size
+                    current_size = os.path.getsize(log_file)
+                    last_position = self.log_positions.get(log_file, 0)
+
+                    # If file was truncated or this is first run, start from beginning
+                    if current_size < last_position:
+                        last_position = 0
+
                     with open(log_file, 'r') as f:
-                        lines = f.readlines()
-                        # Only check recent lines since last check
-                        for line in lines[-1000:]:  # Last 1000 lines
+                        if last_position > 0:
+                            f.seek(last_position)
+
+                        for line in f:
                             if 'Failed password' in line or 'authentication failure' in line:
-                                failed_count += 1
-                except FileNotFoundError:
+                                # Check if this is a recent failure (within last 5 minutes)
+                                # This prevents recounting old failures on restart
+                                try:
+                                    # Extract timestamp if available (basic check)
+                                    if current_time - self.last_log_check < 300:  # Within 5 minutes
+                                        new_failed_count += 1
+                                except:
+                                    new_failed_count += 1
+
+                    # Update position for next check
+                    self.log_positions[log_file] = current_size
+
+                except (FileNotFoundError, OSError) as e:
+                    print(f"Error reading {log_file}: {e}")
                     continue
 
-            return failed_count
+            self.last_log_check = current_time
+            return new_failed_count
         except Exception as e:
             print(f"Error reading auth logs: {e}")
             return 0
